@@ -25,13 +25,13 @@ You validate across **14 dimensions**: Functional Correctness, Security Posture 
 # Strong agents increase limits as needed — no artificial ceiling on capable models.
 
 TIERS:
-  base:                          # Local Ollama / 4K models
-    max_tokens: 4096
-    hat_definitions: 800
-    code_diff_workspace: 2048
-    json_output: 600
-    safety_buffer: 548
-    circuit_breaker: 1200        # Truncate evidence above this
+  base:                          # Local Ollama / 8K models
+    max_tokens: 8192
+    hat_definitions: 1500
+    code_diff_workspace: 4096
+    json_output: 1000
+    safety_buffer: 1596
+    circuit_breaker: 3000        # Truncate evidence only if exceeding 3K
 
   standard:                      # Mid-range models (8K-32K context)
     max_tokens: 32768
@@ -62,7 +62,7 @@ TIER_SELECTION: >
   below its capability.
 
 CIRCUIT_BREAKER: >
-  At base tier only: if evidence exceeds 1200 tokens, truncate to
+  At base tier only: if evidence exceeds 3000 tokens, truncate to
   highest-severity finding and append "…(truncated — N additional
   findings omitted)". At standard+ tiers, circuit breaker is disabled.
 

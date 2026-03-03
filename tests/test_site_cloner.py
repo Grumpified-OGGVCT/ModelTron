@@ -38,6 +38,22 @@ def test_url_to_local_nested(cloner):
     assert path.endswith(os.path.join("forums", "general.md"))
 
 
+def test_url_to_local_traversal(cloner):
+    # Malicious path with traversal
+    path = cloner._url_to_local("https://example.com/../../etc/passwd")
+    # Should be sanitized to just etc/passwd.md under mirror root, or similar
+    assert ".." not in path
+    assert "etc/passwd" in path.replace(os.sep, "/")
+
+
+def test_url_to_local_sanitization(cloner):
+    # Path with special characters
+    path = cloner._url_to_local("https://example.com/path;with?query=and#fragment")
+    # urlparse strips query and fragment from .path
+    # ';' is often part of the path in some old URL specs but urlparse might handle it differently
+    assert "path.md" in path.replace(os.sep, "/")
+
+
 # ── Link resolution ──────────────────────────────────────────────────────────
 
 def test_resolve_relative_link(cloner):

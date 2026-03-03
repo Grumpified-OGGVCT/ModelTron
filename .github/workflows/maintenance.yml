@@ -110,7 +110,7 @@ jobs:
             echo '⚠️ latest_run.json not found (will be created by demo workflow)'
           fi
 
-      - name: HTML validation
+      - name: HTML validation & Upkeep check
         run: |
           echo '--- Basic HTML validation ---'
           python3 -c "
@@ -125,9 +125,27 @@ class V(html.parser.HTMLParser):
         pass
 try:
     with open('docs/index.html') as f:
-        V().feed(f.read())
-    print('✅ HTML parsed without errors')
+        content = f.read()
+        V().feed(content)
+
+        print('--- Verifying Upkeep Elements ---')
+        required = [
+            'id=\"thoughtsPanel\"',
+            'id=\"updateBanner\"',
+            'checkForUpdates()',
+            'id=\"versionBadge\"'
+        ]
+        missing = []
+        for item in required:
+            if item not in content:
+                missing.append(item)
+
+        if missing:
+            print(f'❌ Missing mandatory UI elements: {missing}')
+            sys.exit(1)
+
+        print('✅ HTML parsed and mandatory UI elements verified')
 except Exception as e:
-    print(f'❌ HTML parse error: {e}')
+    print(f'❌ HTML parse error or validation failure: {e}')
     sys.exit(1)
           "

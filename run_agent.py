@@ -76,6 +76,31 @@ def main():
                     "required": ["url"]
                 }
             }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "deep_retrieve_context7",
+                "description": "Perform deep semantic retrieval with re-ranking (Infinite RAG).",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "The search term or complex concept to look up"
+                        },
+                        "n_results": {
+                            "type": "integer",
+                            "description": "Number of results (default 10)"
+                        },
+                        "scope": {
+                            "type": "string",
+                            "description": "Optional domain filter"
+                        }
+                    },
+                    "required": ["query"]
+                }
+            }
         }
     ]
 
@@ -87,7 +112,9 @@ def main():
                 "database of historical records. You do not judge, correct, or filter "
                 "the data. You present findings exactly as they are stored in the "
                 "archive. When asked a question, use the tools to retrieve information "
-                "and summarize the raw findings neutrally."
+                "and summarize the raw findings neutrally. "
+                "You operate under the Infinite CTX protocol: maintain O(1) context by "
+                "focusing on the latest findings and workspace snapshots."
             )
         }
     ]
@@ -101,6 +128,11 @@ def main():
 
         if user_input.lower() in ('exit', 'quit', ''):
             break
+
+        # O(1) Context Bounding: Keep only system prompt, last 10 messages
+        if len(messages) > 11:
+            print("[System] Bounding context (Infinite CTX O(1))...")
+            messages = [messages[0]] + messages[-10:]
 
         messages.append({"role": "user", "content": user_input})
 

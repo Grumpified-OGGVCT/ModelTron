@@ -143,12 +143,34 @@ class SiteCloner:
             return None
 
     def _url_to_local(self, url: str) -> str:
-        """Map a URL to an absolute local .md file path under the mirror root."""
-        path = urlparse(url).path.rstrip('/')
+        """
+        Map a URL to an absolute local .md file path under the mirror root.
+        Implements strict path validation to prevent traversal.
+        """
+        parsed = urlparse(url)
+        # Ensure we only process internal paths
+        if parsed.netloc and parsed.netloc != self._base_domain:
+            # Fallback for safety, though _resolve should catch this
+            return os.path.join(self._mirror_root, "external", "link.md")
+
+        path = parsed.path.rstrip('/')
         if not path:
             path = '/index'
-        parts = [p for p in path.split('/') if p]
-        return os.path.join(self._mirror_root, *parts) + '.md'
+
+        # Strict sanitization: remove leading slashes, split, and filter out '..'
+        parts = []
+        for p in path.split('/'):
+            if not p or p == '.' or p == '..':
+                continue
+            # Basic character sanitization
+            sanitized = "".join(c for c in p if c.isalnum() or c in ('-', '_', '.'))
+            if sanitized:
+                parts.append(sanitized)
+
+        if not parts:
+            parts = ['index']
+
+        return os.path.abspath(os.path.join(self._mirror_root, *parts)) + '.md'
 
     def _rewrite_links(self, soup: BeautifulSoup, current_url: str) -> None:
         """Rewrite internal <a href> attributes to relative .md paths in-place."""
