@@ -1,8 +1,8 @@
 {
   "model": "mistral-large-3:675b-cloud",
-  "ollama_host": "(not yet run — trigger the Live Demo workflow)",
+  "ollama_host": "",
   "query": "Describe Project Janus: what it archives, how the Harvester collects data, how the MCP Server exposes it as tools, and how Mistral Large 3 reasons over the results to produce neutral, unfiltered answers.",
-  "timestamp": null,
-  "response": "Demo has not been run yet. Trigger the 'Live Demo' GitHub Actions workflow to populate this field.",
-  "error": null
+  "timestamp": "2026-03-03T15:31:02.518610+00:00",
+  "response": "",
+  "error": "Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download"
 }
