@@ -205,3 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Project Janus runtime data
+data/vault.db
+data/vault.db-wal
+data/vault.db-shm
+data/chroma_db/

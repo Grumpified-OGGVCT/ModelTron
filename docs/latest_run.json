@@ -1,0 +1,8 @@
+{
+  "model": "mistral-large-3:675b-cloud",
+  "ollama_host": "(not yet run — trigger the Live Demo workflow)",
+  "query": "Describe Project Janus: what it archives, how the Harvester collects data, how the MCP Server exposes it as tools, and how Mistral Large 3 reasons over the results to produce neutral, unfiltered answers.",
+  "timestamp": null,
+  "response": "Demo has not been run yet. Trigger the 'Live Demo' GitHub Actions workflow to populate this field.",
+  "error": null
+}

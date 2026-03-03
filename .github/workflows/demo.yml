@@ -1,0 +1,37 @@
+name: Live Demo
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1"   # Every Monday at midnight UTC
+
+jobs:
+  run-demo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    env:
+      OLLAMA_HOST: ${{ secrets.OLLAMA_HOST }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run demo query
+        run: python scripts/run_demo.py
+
+      - name: Commit updated demo output
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/latest_run.json
+          git diff --staged --quiet || git commit -m "chore: update demo output [skip ci]"
+          git push origin HEAD

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Janus — Sovereign Archival System</title>
+  <style>
+    :root {
+      --bg:       #0d1117;
+      --bg2:      #161b22;
+      --border:   #30363d;
+      --text:     #e6edf3;
+      --muted:    #8b949e;
+      --accent:   #58a6ff;
+      --purple:   #bc8cff;
+      --green:    #3fb950;
+      --yellow:   #d29922;
+      --red:      #f85149;
+      --code-bg:  #1f2937;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.6;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 60%, #0d1117 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 64px 24px 44px;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 3rem; font-weight: 700; margin-bottom: 14px;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--purple) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p { font-size: 1.05rem; color: var(--muted); max-width: 580px; margin: 0 auto 28px; }
+    .badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .badges img { height: 20px; }
+
+    /* ── Layout ── */
+    main { max-width: 980px; margin: 0 auto; padding: 44px 24px; }
+    section { margin-bottom: 52px; }
+    h2 {
+      font-size: 1.35rem; font-weight: 600; margin-bottom: 18px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    h3 {
+      font-size: .85rem; font-weight: 600; margin: 20px 0 8px;
+      color: var(--muted); text-transform: uppercase; letter-spacing: .06em;
+    }
+
+    /* ── Architecture flow ── */
+    .flow {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; font-size: .9rem;
+    }
+    .flow .step {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 6px 12px; white-space: nowrap;
+    }
+    .flow .arr { color: var(--muted); }
+
+    /* ── Component grid ── */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px;
+    }
+    .card .icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .card .name { font-weight: 600; color: var(--accent); margin-bottom: 6px; }
+    .card p { font-size: .86rem; color: var(--muted); }
+
+    /* ── Feature list ── */
+    .features {
+      list-style: none;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px;
+    }
+    .features li {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 12px 16px;
+      font-size: .88rem; display: flex; gap: 10px;
+    }
+    .features li .ico { flex-shrink: 0; font-size: 1rem; }
+
+    /* ── Demo terminal ── */
+    .terminal { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .term-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; background: var(--code-bg); border-bottom: 1px solid var(--border);
+    }
+    .dots span {
+      display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px;
+    }
+    .dot-r { background: var(--red); }
+    .dot-y { background: var(--yellow); }
+    .dot-g { background: var(--green); }
+    .term-label { font-size: .8rem; color: var(--muted); font-family: monospace; }
+    .term-meta {
+      padding: 10px 16px; font-size: .78rem; color: var(--muted);
+      font-family: monospace; border-bottom: 1px solid var(--border);
+    }
+    .term-query {
+      padding: 10px 16px; font-size: .88rem; color: var(--purple);
+      font-family: monospace; border-bottom: 1px solid var(--border);
+    }
+    .term-query::before { content: "User › "; color: var(--muted); }
+    .term-body {
+      padding: 16px; font-size: .88rem; line-height: 1.75;
+      white-space: pre-wrap; font-family: monospace; min-height: 80px;
+    }
+    .term-body.loading { color: var(--muted); font-style: italic; }
+    .term-body.error   { color: var(--red); }
+    .term-foot {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 16px; border-top: 1px solid var(--border);
+    }
+    .term-foot .ts { font-size: .76rem; color: var(--muted); font-family: monospace; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-block; padding: 7px 14px; border-radius: 6px;
+      font-size: .83rem; font-weight: 500; border: 1px solid var(--border);
+      background: var(--bg2); color: var(--text); cursor: pointer;
+    }
+    .btn:hover { background: var(--border); text-decoration: none; }
+
+    /* ── Code blocks ── */
+    code {
+      font-family: "SFMono-Regular", Consolas, monospace; font-size: .86em;
+      background: var(--code-bg); padding: 2px 6px; border-radius: 4px; color: var(--purple);
+    }
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px; overflow-x: auto;
+      font-size: .84rem; line-height: 1.65; margin-top: 8px;
+    }
+    pre code { background: none; padding: 0; color: var(--text); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 28px 24px;
+      text-align: center; color: var(--muted); font-size: .83rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚖ Project Janus</h1>
+  <p>A sovereign, closed-loop archival system — crawl, clone, archive and query the web with a fully local AI brain. No external APIs. No censorship.</p>
+  <div class="badges">
+    <a href="https://github.com/Grumpified-OGGVCT/Project_Janus/actions/workflows/ci.yml">
+      <img src="https://github.com/Grumpified-OGGVCT/Project_Janus/actions/workflows/ci.yml/badge.svg" alt="CI">
+    </a>
+    <a href="https://github.com/Grumpified-OGGVCT/Project_Janus/actions/workflows/demo.yml">
+      <img src="https://img.shields.io/badge/demo-live-brightgreen" alt="Live Demo">
+    </a>
+    <a href="https://github.com/Grumpified-OGGVCT/Project_Janus">
+      <img src="https://img.shields.io/badge/GitHub-source-24292e?logo=github" alt="GitHub">
+    </a>
+  </div>
+</header>
+
+<main>
+
+  <!-- Architecture -->
+  <section id="architecture">
+    <h2>Architecture</h2>
+    <div class="flow">
+      <span class="step">👤 User Prompt</span>
+      <span class="arr">→</span>
+      <span class="step">🧠 Mistral Large 3 (Ollama)</span>
+      <span class="arr">→</span>
+      <span class="step">📚 MCP Server (Librarian)</span>
+      <span class="arr">→</span>
+      <span class="step">🗄 SQLite + ChromaDB Vault</span>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">🧠</div>
+        <div class="name">Brain — Mistral Large 3</div>
+        <p>Runs via Ollama (256K context, native function-calling). Decides which tool to invoke, synthesises raw archive data into neutral answers.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📚</div>
+        <div class="name">Librarian — MCP Server</div>
+        <p>Exposes <code>search_archives</code> and <code>view_thread_history</code>. Always opens the vault in <strong>read-only</strong> mode. Local embeddings via <code>all-MiniLM-L6-v2</code>.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🕷</div>
+        <div class="name">Field Agent — Harvester</div>
+        <p>Per-thread crawl with Wayback CDX temporal snapshots. SHA-256 content hashing for deduplication and integrity.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🗺</div>
+        <div class="name">Site Cloner</div>
+        <p>Mirrors an entire domain as navigable <code>.md</code> files. Internal links rewritten to relative paths. Generates a <code>_index.md</code> navigation tree.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <h2>Features</h2>
+    <ul class="features">
+      <li><span class="ico">🌐</span>Full-site Markdown clone — every page saved as a linked <code>.md</code> file, navigable in GitHub / Obsidian / VS Code</li>
+      <li><span class="ico">⏳</span>Temporal versioning — <code>live</code>, <code>wayback_oldest</code>, and <code>wayback_recent</code> captures side-by-side</li>
+      <li><span class="ico">🔒</span>Immutable vault — SHA-256 content hashes; MCP server is permanently read-only</li>
+      <li><span class="ico">🧲</span>Semantic search — sentence-transformers + ChromaDB, entirely local</li>
+      <li><span class="ico">🤖</span>100% local AI — no OpenAI / Anthropic; all inference via Ollama</li>
+      <li><span class="ico">🔗</span>Native tool-calling — Mistral Large 3's function-calling drives the MCP tool loop</li>
+      <li><span class="ico">✅</span>CI-tested — unit tests run on every push via GitHub Actions</li>
+      <li><span class="ico">📡</span>Org-secret demo — weekly auto-demo via <code>OLLAMA_HOST</code> org secret</li>
+    </ul>
+  </section>
+
+  <!-- Live Demo -->
+  <section id="demo">
+    <h2>Live Demo</h2>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px;">
+      Output below is generated by the
+      <a href="https://github.com/Grumpified-OGGVCT/Project_Janus/actions/workflows/demo.yml">Demo workflow</a>
+      using <strong>Mistral Large 3</strong> via the organisation's Ollama cloud endpoint.
+    </p>
+    <div class="terminal">
+      <div class="term-bar">
+        <div class="dots">
+          <span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span>
+        </div>
+        <span class="term-label" id="demo-model">mistral-large-3:675b-cloud</span>
+        <a class="btn" href="https://github.com/Grumpified-OGGVCT/Project_Janus/actions/workflows/demo.yml" target="_blank">▶ Trigger new run</a>
+      </div>
+      <div class="term-meta" id="demo-meta">Loading…</div>
+      <div class="term-query" id="demo-query"></div>
+      <div class="term-body loading" id="demo-body">Fetching latest demo output…</div>
+      <div class="term-foot">
+        <span class="ts" id="demo-ts"></span>
+        <a class="btn" href="latest_run.json" target="_blank">Raw JSON</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Start -->
+  <section id="quickstart">
+    <h2>Quick Start</h2>
+    <h3>1 — Install</h3>
+    <pre><code>git clone https://github.com/Grumpified-OGGVCT/Project_Janus.git
+cd Project_Janus
+pip install -r requirements.txt</code></pre>
+
+    <h3>2 — Configure targets in main.py</h3>
+    <pre><code># Per-thread harvest (adds posts to vault.db):
+TARGET_URLS = ["https://your-site.net/threads/example.123/"]
+
+# Full-site Markdown clone (mirrors entire domain):
+TARGET_SITE  = "https://your-site.net/"
+CLONE_MAX_PAGES = 1000</code></pre>
+
+    <h3>3 — Run</h3>
+    <pre><code># Harvest → clone → launch AI agent:
+python main.py
+
+# Agent only (no harvest):
+python run_agent.py</code></pre>
+
+    <h3>4 — Site clone output layout</h3>
+    <pre><code>data/site_mirror/your-site.net/
+  _index.md          ← navigation tree (every page linked)
+  index.md           ← home page
+  threads/
+    some-thread.md
+    another-thread.md
+  forums/
+    general.md</code></pre>
+
+    <h3>5 — Enable this demo page (once)</h3>
+    <pre><code>GitHub Repo → Settings → Pages
+  Source: Deploy from branch → main → /docs → Save</code></pre>
+  </section>
+
+</main>
+
+<footer>
+  Project Janus &nbsp;·&nbsp;
+  <a href="https://github.com/Grumpified-OGGVCT/Project_Janus">GitHub</a> &nbsp;·&nbsp;
+  Mistral Large 3 + Ollama &nbsp;·&nbsp; No external APIs
+</footer>
+
+<script>
+  fetch('latest_run.json?_=' + Date.now())
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById('demo-model').textContent = d.model || 'unknown';
+      const ts = d.timestamp ? new Date(d.timestamp).toLocaleString() : '—';
+      document.getElementById('demo-meta').textContent =
+        'host: ' + (d.ollama_host || '—') + '   |   run: ' + ts;
+      document.getElementById('demo-query').textContent = d.query || '';
+      document.getElementById('demo-ts').textContent = 'Generated: ' + ts;
+
+      const body = document.getElementById('demo-body');
+      body.classList.remove('loading');
+      if (d.error) {
+        body.classList.add('error');
+        body.textContent = 'Error: ' + d.error;
+      } else if (d.response) {
+        body.textContent = d.response;
+      } else {
+        body.classList.add('loading');
+        body.textContent = 'No response yet — trigger the Live Demo workflow above.';
+      }
+    })
+    .catch(err => {
+      document.getElementById('demo-meta').textContent = 'Could not load demo output.';
+      const body = document.getElementById('demo-body');
+      body.classList.remove('loading');
+      body.classList.add('error');
+      body.textContent =
+        'Failed to fetch latest_run.json: ' + err.message +
+        '\n\n(If viewing via file://, this will always fail due to CORS — ' +
+        'view via GitHub Pages instead.)';
+    });
+</script>
+
+</body>
+</html>
