@@ -59,6 +59,21 @@ async def list_tools():
                 },
                 "required": ["url"]
             }
+        ),
+        Tool(
+            name="request_planning",
+            description="Initiate the planning phase for a new task.",
+            inputSchema={"type": "object", "properties": {}}
+        ),
+        Tool(
+            name="approve_task_completion",
+            description="Approve that the current task is completed.",
+            inputSchema={"type": "object", "properties": {}}
+        ),
+        Tool(
+            name="get_next_task",
+            description="Retrieve the next task in the queue.",
+            inputSchema={"type": "object", "properties": {}}
         )
     ]
 
@@ -111,6 +126,15 @@ async def call_tool(name: str, arguments: dict):
             output += f"[{source.upper()} | {date}]{deleted_marker} {author}: {content}\n"
 
         return [TextContent(type="text", text=output)]
+
+    elif name == "request_planning":
+        return [TextContent(type="text", text="Planning phase initiated. Proceed with task.")]
+
+    elif name == "approve_task_completion":
+        return [TextContent(type="text", text="Task completion approved. You may now request the next task.")]
+
+    elif name == "get_next_task":
+        return [TextContent(type="text", text="No further tasks available at this time.")]
 
     return [TextContent(type="text", text=f"Unknown tool: {name}")]
 

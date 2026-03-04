@@ -1,5 +1,29 @@
+import os
+import hashlib
 import asyncio
 import ollama
+
+def get_workspace_snapshot() -> str:
+    """Generate a bounded workspace snapshot representing the current state."""
+    snapshot = "Workspace Snapshot:\n"
+    data_dir = os.path.join(os.path.dirname(__file__), "data")
+    if os.path.exists(data_dir):
+        for root, _, files in os.walk(data_dir):
+            for f in sorted(files):
+                filepath = os.path.join(root, f)
+                rel_path = os.path.relpath(filepath, data_dir)
+                if f.endswith('.db') or f.endswith('.sqlite') or 'chroma_db' in root:
+                    snapshot += f"- {rel_path} (Database file)\n"
+                    continue
+                try:
+                    with open(filepath, 'rb') as file_obj:
+                        file_hash = hashlib.sha256(file_obj.read()).hexdigest()[:8]
+                    snapshot += f"- {rel_path} (SHA256: {file_hash})\n"
+                except Exception:
+                    snapshot += f"- {rel_path} (unreadable)\n"
+    else:
+        snapshot += "(Empty workspace)\n"
+    return snapshot
 
 # Configuration
 MISTRAL_MODEL = "mistral-large-3:675b-cloud"  # Cloud-tagged Mistral Large 3 via Ollama
@@ -101,6 +125,39 @@ def main():
                     "required": ["query"]
                 }
             }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "request_planning",
+                "description": "Initiate the planning phase for a new task.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {}
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "approve_task_completion",
+                "description": "Approve that the current task is completed.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {}
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_next_task",
+                "description": "Retrieve the next task in the queue.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {}
+                }
+            }
         }
     ]
 
@@ -114,7 +171,10 @@ def main():
                 "archive. When asked a question, use the tools to retrieve information "
                 "and summarize the raw findings neutrally. "
                 "You operate under the Infinite CTX protocol: maintain O(1) context by "
-                "focusing on the latest findings and workspace snapshots."
+                "focusing on the latest findings and workspace snapshots. "
+                "You MUST follow the MCP Task Lifecycle strictly: Use request_planning "
+                "when starting a task, approve_task_completion when finished, and "
+                "get_next_task to get more work."
             )
         }
     ]
@@ -129,12 +189,21 @@ def main():
         if user_input.lower() in ('exit', 'quit', ''):
             break
 
-        # O(1) Context Bounding: Keep only system prompt, last 10 messages
-        if len(messages) > 11:
-            print("[System] Bounding context (Infinite CTX O(1))...")
-            messages = [messages[0]] + messages[-10:]
-
         messages.append({"role": "user", "content": user_input})
+
+        # O(1) Context Bounding (Silver Hat): Keep system prompt, fresh snapshot, and last <= 10 actions
+        snapshot_content = get_workspace_snapshot()
+
+        # If the second message isn't the snapshot, insert it
+        if len(messages) > 1 and not messages[1].get("content", "").startswith("Workspace Snapshot:"):
+            messages.insert(1, {"role": "system", "content": snapshot_content})
+        elif len(messages) > 1:
+            messages[1] = {"role": "system", "content": snapshot_content}
+
+        # Bounding: system + snapshot + up to 10 latest messages
+        if len(messages) > 12:
+            print("[System] Bounding context (Infinite CTX O(1))...")
+            messages = [messages[0], messages[1]] + messages[-10:]
 
         # Step 1: Ask Mistral what to do
         print("[Mistral] Thinking...")

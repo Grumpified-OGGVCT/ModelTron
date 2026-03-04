@@ -494,6 +494,9 @@
                 <span class="tool-tag" role="listitem">search_archives</span>
                 <span class="tool-tag" role="listitem">view_thread_history</span>
                 <span class="tool-tag" role="listitem">deep_retrieve_context7<span class="infinite-badge">Infinite</span></span>
+                <span class="tool-tag" role="listitem">request_planning</span>
+                <span class="tool-tag" role="listitem">approve_task_completion</span>
+                <span class="tool-tag" role="listitem">get_next_task</span>
                 <span class="tool-tag" role="listitem">get_vault_stats</span>
                 <span class="tool-tag" role="listitem">list_domains</span>
                 <span class="tool-tag" role="listitem">get_snapshot</span>
@@ -652,7 +655,11 @@
             function addThought(label, content) {
                 const step = document.createElement('div');
                 step.className = 'thought-step';
-                step.innerHTML = `<span class="thought-label">[${sanitize(label)}]</span> ${sanitize(content)}`;
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'thought-label';
+                labelSpan.appendChild(document.createTextNode(`[${label}]`));
+                step.appendChild(labelSpan);
+                step.appendChild(document.createTextNode(` ${content}`));
                 thoughtsContent.appendChild(step);
             }
 
