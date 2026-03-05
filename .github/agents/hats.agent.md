@@ -463,7 +463,7 @@ If missing, abort: `"❗ Missing mandatory hat(s): [list]. Include before procee
 - [ ] **No Linear Accumulation**: Historical tokens actively discarded, not truncated. Context size remains constant regardless of whether the task takes 5 steps or 500 steps
 - [ ] **Snapshot Integrity**: Deterministic state capture using file hashes, not full content. Reproducible workspace representation
 - [ ] **Global-Reasoning Threshold**: 10M+ token contexts only when explicitly justified. Per Infinite CTX: "only invoke a massive 10M-token LLM when the query crosses a complex global-reasoning threshold"
-- [ ] **Gas Metering Enforcement**: Resource budgets enforced per Sovereign OS / Project Janus constraints
+- [ ] **Gas Metering Enforcement**: Resource budgets enforced per Sovereign OS / ModelTron constraints
 - [ ] **Reconstruction Fidelity**: Bounded prompt must reconstruct sufficient context for correct decision-making without prior conversation history
 
 **Flag**: Unbounded context growth, linear token accumulation, missing O(1) reconstruction, snapshot non-determinism, missing gas metering, context window overflow without circuit breaker
@@ -828,7 +828,7 @@ Date: [ISO 8601]
 
 ---
 
-## Project Context — Sovereign Agentic OS / Project Janus
+## Project Context — ModelTron: Enterprise Model Ranking System
 
 - **ALIGN rules** (R-001 to R-008+): Regex-based safety gates
 - **Epistemic modifiers**: [BELIEVE]/[DOUBT] — must not affect security decisions
@@ -836,9 +836,9 @@ Date: [ISO 8601]
 - **ACFS**: Agent Container File System — sandboxed file access
 - **Deployment tiers**: hearth (dev) → forge (staging) → sovereign (prod)
 - **Host functions**: READ, WRITE, SPAWN, WEB_SEARCH — tiered capabilities
-- **MCP Server** (Project Janus): Read-only vault access — must never write
+- **ModelTron Engine**: Deterministic verification pipeline — must never rely on LLM for grading
 - **SHA-256 integrity**: Content hashing for deduplication must not be weakened
-- **No external API calls** (Project Janus): All inference via local Ollama
+- **API & Agent Accessible**: Provides /v1/recommend and /v1/evaluate endpoints
 - **Setup Pipeline**: `install.bat`/`install.sh` → `setup_wizard.py` → `run.bat`/`run.sh`
 - **MCP Task Lifecycle**: `request_planning` → `approve_task_completion` → `get_next_task`
 - **Infinite CTX Protocol**: O(1) bounded prompts via workspace snapshot + last ≤10 actions
