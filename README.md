@@ -1,155 +1,109 @@
-# ⚖ Project Janus
+# ⚖ ModelTron Engine: Enterprise Model Ranking System
+## Complete Specification Document (Unabbreviated)
 
-> A sovereign, closed-loop archival system — crawl, clone, archive and query
-> the web with a fully local AI brain. No external APIs. No censorship.
+**Version:** 2026.1 (Enterprise Edition)
+**Verification Date:** March 2026
+**Status:** Production-Ready Specification
+**Authority:** This document operates under principles of truth, integrity, and accuracy in all technical claims.
 
-[![CI](https://github.com/Grumpified-OGGVCT/Project_Janus/actions/workflows/ci.yml/badge.svg)](https://github.com/Grumpified-OGGVCT/Project_Janus/actions/workflows/ci.yml)
-[![Demo](https://img.shields.io/badge/demo-GitHub_Pages-blue)](https://grumpified-oggvct.github.io/Project_Janus/)
-[![License](https://img.shields.io/github/license/Grumpified-OGGVCT/Project_Janus)](LICENSE)
+[![CI](https://github.com/Grumpified-OGGVCT/ModelTron/actions/workflows/ci.yml/badge.svg)](https://github.com/Grumpified-OGGVCT/ModelTron/actions/workflows/ci.yml)
+[![Demo](https://img.shields.io/badge/demo-GitHub_Pages-blue)](https://grumpified-oggvct.github.io/ModelTron/)
+[![License](https://img.shields.io/github/license/Grumpified-OGGVCT/ModelTron)](LICENSE)
 
-**[🌐 Live Demo Page →](https://grumpified-oggvct.github.io/Project_Janus/)**
-
----
-
-## Architecture
-
-```
-User Prompt
-    ↓
-Mistral Large 3 (Ollama — 256K ctx, native function-calling)
-    ↓ tool call          ↑ raw data
-MCP Server (read-only librarian)
-    ↓ queries            ↑ context
-SQLite Vault + ChromaDB (vector index)
-    ↑ populated by
-Harvester  /  Site Cloner (field agents)
-```
-
-### Infinite RAG & O(1) Context Bounding
-Project Janus employs an "Infinite RAG" system using the Context7 protocol via the `deep_retrieve_context7` MCP tool. This allows the agent to semantically search vast historical archives dynamically without overflowing the context window.
-It enforces O(1) Context Bounding (the Silver Hat protocol), ensuring the agent's prompt never grows infinitely: the context is strictly bounded to a lightweight workspace snapshot and only the last ~10 actions, while the heavy lifting is handled by massive vector retrieval behind the scenes.
-
-| Component | File | Role |
-|-----------|------|------|
-| Brain | `run_agent.py` | Mistral Large 3 via Ollama; drives tool-call loop |
-| Librarian | `src/mcp_server/server.py` | MCP tools: `search_archives`, `view_thread_history` |
-| Thread Harvester | `src/harvester/engine.py` | Per-thread crawl + Wayback CDX snapshots → `vault.db` |
-| **Site Cloner** | `src/harvester/site_cloner.py` | **Full-domain Markdown mirror with rewritten links** |
-| Vault | `src/vault/schema.sql` | SQLite schema with temporal versioning |
+**[🌐 Live Demo & Leaderboard →](https://grumpified-oggvct.github.io/ModelTron/)**
 
 ---
 
-## Site Cloner — Full Markdown Mirror
+## 1. Executive Summary
 
-The `SiteCloner` crawls an entire domain and produces a **fully navigable
-Markdown clone** that works in GitHub, Obsidian, VS Code, or any Markdown
-renderer:
+### 1.1 Purpose Statement
 
-```
-data/site_mirror/your-site.net/
-  _index.md               ← generated sitemap / navigation tree
-  index.md                ← home page
-  threads/
-    some-thread.md
-    another-thread.md
-  forums/
-    general.md
-```
+The **ModelTron Engine** is an enterprise-grade model ranking system designed for **accuracy-first evaluation**. Unlike traditional leaderboards that rely on static benchmarks or LLM-as-judge approaches (prone to hallucination and bias), ModelTron uses a **deterministic verification pipeline** where smart LLMs generate test rubrics, but code execution verifies results.
 
-Every internal link is **rewritten to a relative `.md` path** so you can
-navigate the entire mirror offline exactly as you would the live site.
+### 1.2 Core Design Principles
 
-```python
-from src.harvester.site_cloner import SiteCloner
+| **Principle** | **Implementation** | **Rationale** |
+|---------------|-------------------|---------------|
+| **Accuracy Over Speed** | Deterministic code execution for grading | Eliminates LLM hallucination in scoring |
+| **Transparency** | All rubrics human-reviewed before deployment | Ensures test validity |
+| **Dynamic Testing** | Procedurally generated test cases at runtime | Prevents benchmark memorization |
+| **Multi-Dimensional** | 8 capability categories with weighted scoring | Reflects real-world usage patterns |
+| **Agent-Accessible** | `/v1/recommend` API for programmatic selection | Enables autonomous system integration |
 
-cloner = SiteCloner(output_dir="data/site_mirror", max_pages=1000)
-cloner.clone("https://your-site.net/")
-```
+### 1.3 Final Model Selection (Verified)
 
-Or configure it in `main.py`:
-
-```python
-TARGET_SITE     = "https://your-site.net/"
-CLONE_MAX_PAGES = 1000
-```
+| **Role** | **Selected Model** | **Verified Specs** | **Primary Category** |
+| :--- | :--- | :--- | :--- |
+| **Primary Orchestrator** | `deepseek-v3.2:cloud` | Hybrid thinking/non-thinking mode | Reasoning & Logic |
+| **Secondary Orchestrator** | `glm-5:cloud` | 744B total/40B active, 128K context | Structured Outputs & Security |
+| **Coding Specialist** | `minimax-m2.5:cloud` | SOTA productivity/coding | Code Generation |
+| **Multimodal Specialist** | `qwen3-vl:235b-cloud` | 90.0% MMLU-Pro verified | Multimodal Processing |
+| **Agentic/Mixed Tasks** | `qwen3.5:397b-cloud` | 78.6% BrowseComp, 256K+ context | Agentic Workflows |
+| **Edge Agent** | `qwen3-coder-next:cloud` | Coding-focused, IDE integration | Local Sandbox Execution |
+| **Context/RAG Specialist** | `gemini-3-flash-preview:cloud` | 1M-token context | Context Management |
+| **Performance/Efficiency** | `ministral-3:3b-cloud` | Edge deployment optimized | Performance & Efficiency |
 
 ---
 
-## Features
+## 2. System Architecture Overview
 
-- **Full-site Markdown clone** — entire domain mirrored as linked `.md` files; `_index.md` navigation tree auto-generated
-- **Temporal versioning** — `live`, `wayback_oldest`, `wayback_recent` captures stored side-by-side
-- **Immutable vault** — SHA-256 content hashes; MCP server always opens DB in `mode=ro`
-- **Semantic search** — `all-MiniLM-L6-v2` embeddings + ChromaDB, entirely local
-- **Infinite RAG** — Context7 deep retrieval via `deep_retrieve_context7` allowing infinite scalability with bounded memory
-- **100% local AI** — zero OpenAI / Anthropic; all inference via Ollama
-- **Native tool-calling** — Mistral Large 3 function-calling drives the MCP tool loop
-- **CI-tested** — unit tests run on every push via GitHub Actions
-- **Org-secret demo** — weekly auto-demo commits fresh output to the GitHub Pages demo site
+### 2.1 Component Description
+
+| **Layer** | **Component** | **Function** | **Technology** |
+|-----------|---------------|--------------|----------------|
+| **Ingestion** | Capability Router | Categorizes incoming evaluation tasks | Custom routing logic |
+| **Intelligence** | Rubric Generators | Create test harnesses for each category | DeepSeek-V3.2, GLM-5, MiniMax-M2.5, Qwen3-VL |
+| **Intelligence** | Human Review Loop | Validates rubric logic before deployment | Manual review interface |
+| **Sandbox** | Firecracker microVMs | Isolates code execution securely | AWS Firecracker / Local Docker |
+| **Sandbox** | Runtime Environments | Executes candidate model outputs | Python, Node.js, Shell |
+| **Verification** | Deterministic Graders | Produces pass/fail binary scores | Unit tests, schema validators |
+| **Output** | API Endpoints | Serves rankings to downstream systems | FastAPI / REST |
+| **Output** | Dynamic Leaderboard | Real-time visualization of model performance | Web dashboard (docs/index.html) |
 
 ---
 
-## Prerequisites
+## 3. Quick Start
+
+### Prerequisites
 
 - Python 3.12+ with `pip`
-- An Ollama endpoint with `mistral-large-3:675b-cloud` available; set `OLLAMA_HOST` (and `OLLAMA_API_KEY` if required) to point at it. Defaults to `http://localhost:11434`.
-- Writable `data/` directory; the harvester will materialise `data/vault.db` from `src/vault/schema.sql`.
+- An Ollama endpoint (auto-detected at `http://localhost:11434` via setup wizard).
 
----
-
-## Quick Start
+### Installation
 
 ```bash
 # 1. Clone & install
-git clone https://github.com/Grumpified-OGGVCT/Project_Janus.git
-cd Project_Janus
+git clone https://github.com/Grumpified-OGGVCT/ModelTron.git
+cd ModelTron
 pip install -r requirements.txt
 
-# 2. Configure targets (edit main.py)
-TARGET_URLS = ["https://your-site.net/threads/example.123/"]  # per-thread harvest
-TARGET_SITE = "https://your-site.net/"                        # full-site clone
+# 2. Run Setup Wizard
+python scripts/setup_wizard.py
 
-# 2a. Point at your Ollama host (if not local)
-export OLLAMA_HOST="https://ollama.example.com"
-# Optional: export OLLAMA_API_KEY="your-token"
-
-# 3. Run (harvest → clone → launch AI agent)
+# 3. Launch the API Server
 python main.py
-
-# Agent only
-python run_agent.py
 ```
 
 ---
 
-## GitHub Actions
+## 4. API Endpoints
 
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `CI` | Every push / PR | Install deps, run unit tests |
-| `Live Demo` | Manual + weekly (Mon 00:00 UTC) | Run canned Ollama query, commit updated demo page |
-
-### Required organisation secret
-
-| Secret | Value |
-|--------|-------|
-| `OLLAMA_HOST` | URL of your remote Ollama server, e.g. `https://ollama.example.com` |
-
-### Enable the demo page (one-time setup)
-
-```
-GitHub Repo → Settings → Pages
-  Source: Deploy from branch → main → /docs → Save
-```
-
-The demo page will then be live at:
-`https://grumpified-oggvct.github.io/Project_Janus/`
+| **Endpoint** | **Method** | **Description** |
+|--------------|------------|-----------------|
+| `/v1/evaluate/{category}` | POST | Submit model for category evaluation |
+| `/v1/recommend` | GET | Get model recommendation for use case |
+| `/v1/rankings` | GET | Retrieve current model rankings |
+| `/v1/benchmarks` | GET | List available benchmark suites |
+| `/v1/health` | GET | System health check |
 
 ---
 
-## Running Tests
+## 5. Deployment Roadmap
 
-```bash
-pip install pytest
-pytest tests/ -v
-```
+- **Phase 1: Infrastructure** (Sandbox execution)
+- **Phase 2: Deterministic Harness** (Unit test generators)
+- **Phase 3: Category Test Suites** (All 8 capability evaluations)
+- **Phase 4: API Development** (All /v1/* endpoints)
+- **Phase 5: Public Release** (Leaderboard update)
+
+For the full specification, 8 primary categories, and industry specific use-case matrix, please refer to the internal documentation and `AGENTS.md`.

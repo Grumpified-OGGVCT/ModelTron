@@ -1,13 +1,13 @@
 # AGENTS.md — Agent Contextual Guide
 
-> This file helps ALL agents (Jules, Copilot, Antigravity, Gemini CLI, etc.) understand the Project Janus repository.
+> This file helps ALL agents (Jules, Copilot, Antigravity, Gemini CLI, etc.) understand the ModelTron repository.
 > **Framework Version: 12-Hat Aegis-Nexus CoVE v2.0** | **Last Updated: 2026-03-03**
 
 ---
 
 ## 1. Project Overview
 
-Project Janus is a **sovereign, closed-loop archival system**. It crawls, clones, archives, and queries the web using a fully local AI brain (Mistral Large 3 via Ollama). No external APIs. No censorship.
+ModelTron is a **sovereign, closed-loop archival system**. It crawls, clones, archives, and queries the web using a fully local AI brain (Mistral Large 3 via Ollama). No external APIs. No censorship.
 
 ### Architecture
 
@@ -25,7 +25,7 @@ Project Janus is a **sovereign, closed-loop archival system**. It crawls, clones
 ### Project Layout
 
 ```
-Project_Janus/
+ModelTron/
 ├── .github/
 │   ├── agents/hats.agent.md     # 12-Hat CoVE v2.0 review agent (FULL SPEC)
 │   └── workflows/
