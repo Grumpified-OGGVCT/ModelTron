@@ -1,6 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
-from main import app, init_db
+from main import app
+import asyncio
+from main import init_db_async
 import os
 import sqlite3
 
@@ -10,7 +12,7 @@ client = TestClient(app)
 def setup_db():
     if os.path.exists("data/rankings.db"):
         os.remove("data/rankings.db")
-    init_db()
+    asyncio.run(init_db_async())
     yield
     if os.path.exists("data/rankings.db"):
         os.remove("data/rankings.db")

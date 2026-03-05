@@ -290,3 +290,10 @@ Four hats carry designated **UPKEEP** responsibilities to ensure every code chan
 ---
 
 **Every agent operating on this repository MUST read and follow this file plus `.github/agents/hats.agent.md`.**
+
+## 13. Performance Architecture (⚡ Bolt Profile)
+
+ModelTron operates a highly concurrent API backed by SQLite:
+- **Async I/O:** `aiosqlite` is used exclusively. Do not introduce synchronous `sqlite3` calls in FastAPI dependencies or routes.
+- **SQLite Pragmas:** The database operates in `WAL` (Write-Ahead Logging) and `synchronous=NORMAL` modes to support high-concurrency read/write workloads. These are applied in the `lifespan` hook during `init_db_async()`.
+- **TTL Caching:** An `asyncio.Lock()` protected `TTLCache` shields heavy read-operations (`/v1/recommend`, `/v1/rankings`) from hitting the database on every request.

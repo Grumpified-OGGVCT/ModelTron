@@ -1,11 +1,12 @@
 import sqlite3
 import os
-from main import init_db
+from main import init_db_async
+import asyncio
 
 def test_schema_creation():
     if os.path.exists("data/rankings.db"):
         os.remove("data/rankings.db")
-    init_db()
+    asyncio.run(init_db_async())
 
     conn = sqlite3.connect("data/rankings.db")
     cursor = conn.cursor()

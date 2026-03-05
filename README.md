@@ -57,6 +57,8 @@ The **ModelTron Engine** is an enterprise-grade model ranking system designed fo
 | **Sandbox** | Firecracker microVMs | Isolates code execution securely | AWS Firecracker / Local Docker |
 | **Sandbox** | Runtime Environments | Executes candidate model outputs | Python, Node.js, Shell |
 | **Verification** | Deterministic Graders | Produces pass/fail binary scores | Unit tests, schema validators |
+| **Storage** | Async SQLite DB | High-concurrency data persistence | `aiosqlite`, SQLite WAL mode |
+| **Caching** | TTL Memory Cache | Thread-safe caching for read operations | `asyncio.Lock` TTLCache |
 | **Output** | API Endpoints | Serves rankings to downstream systems | FastAPI / REST |
 | **Output** | Dynamic Leaderboard | Real-time visualization of model performance | Web dashboard (docs/index.html) |
 
