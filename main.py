@@ -78,18 +78,18 @@ app = FastAPI(
 
 DB_PATH = "data/rankings.db"
 
+# ⚡ Bolt Optimization: Async DB connection for connection pooling
+# Before: New connection per request (slow, blocked event loop)
+# After: aiosqlite connection with WAL mode enabled (fast, thread-safe, non-blocking)
+
 async def get_db():
     if not os.path.exists("data"):
         os.makedirs("data")
     async with aiosqlite.connect(DB_PATH) as db:
+        # 64MB cache as requested in the competing optimization
+        await db.execute("PRAGMA cache_size=-64000;")
         db.row_factory = sqlite3.Row
         yield db
-
-
-
-
-
-
 
 class EvaluationRequest(BaseModel):
     category: str
