@@ -81,6 +81,10 @@
             margin-bottom: 2rem;
         }
 
+        .table-responsive {
+            overflow-x: auto;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -155,10 +159,6 @@
             font-size: 0.875rem;
             text-transform: uppercase;
             margin-top: 0.5rem;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
         }
 
         #api-demo {
