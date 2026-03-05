@@ -16,20 +16,30 @@ app = FastAPI(
 
 DB_PATH = "data/rankings.db"
 
+# ⚡ Bolt Optimization: Global DB connection for connection pooling
+# Before: New connection per request (slow, blocked event loop)
+# After: Single global connection with WAL mode enabled (fast, thread-safe)
+GLOBAL_DB_CONN = None
+
 def get_db():
-    if not os.path.exists("data"):
-        os.makedirs("data")
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
+    global GLOBAL_DB_CONN
+    if GLOBAL_DB_CONN is None:
+        if not os.path.exists("data"):
+            os.makedirs("data")
+        # Use check_same_thread=False to share across FastAPI threadpool
+        GLOBAL_DB_CONN = sqlite3.connect(DB_PATH, check_same_thread=False)
+        # WAL mode allows concurrent reads and writes, NORMAL synchronous is faster
+        GLOBAL_DB_CONN.execute("PRAGMA journal_mode=WAL;")
+        GLOBAL_DB_CONN.execute("PRAGMA synchronous=NORMAL;")
+        GLOBAL_DB_CONN.execute("PRAGMA cache_size=-64000;") # 64MB cache
+        GLOBAL_DB_CONN.row_factory = sqlite3.Row
+    yield GLOBAL_DB_CONN
 
 def init_db():
     if not os.path.exists("data"):
         os.makedirs("data")
     conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA journal_mode=WAL;")
     with open("src/db/schema.sql", "r") as f:
         conn.executescript(f.read())
     conn.close()
